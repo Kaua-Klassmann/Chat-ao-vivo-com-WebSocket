@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Comunicação em Tempo Real com Socket.IO</h1>
+      <input
+        id="inputMensagem"
+        type="text"
+        placeholder="Digite uma mensagem..."
+      />
+      <button onclick="enviarMensagem()">Enviar</button>
+      <ul id="mensagens"></ul>
+    </main>
+
+    <script>
+      const sala = localStorage.getItem("sala");
+      const nome = localStorage.getItem("nome");
+
+      const socket = io("http://localhost:3000");
+
+      socket.emit("entrarSala", { sala, nome }, (mensagens) => {
+        mensagens.forEach((mensagem) => {
+          const li = document.createElement("li");
+          li.textContent = `${mensagem.nome} - ${mensagem.mensagem}`;
+          document.querySelector("ul").appendChild(li);
+        });
+      });
+
+      socket.on("receberMensagem", ({ mensagem, nome }) => {
+        const li = document.createElement("li");
+        li.textContent = `${nome} - ${mensagem}`;
+        document.querySelector("ul").appendChild(li);
+      });
+
+      function enviarMensagem() {
+        const input = document.querySelector("input");
+
+        socket.emit("enviarMensagem", {
+          mensagem: input.value,
+          sala: sala,
+          nome: nome,
+        });
+
+        const li = document.createElement("li");
+        li.textContent = `${nome} - ${input.value}`;
+        document.querySelector("ul").appendChild(li);
+
+        input.value = "";
+      }
+    </script>
+  </body>
+</html>
